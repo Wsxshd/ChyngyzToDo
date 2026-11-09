@@ -1,0 +1,81 @@
+digraph Classes {
+    graph [rankdir=TB, fontname="DejaVu Sans", pad=0.4, nodesep=0.35, ranksep=0.9, bgcolor="white", compound=true];
+    node  [shape=record, fontname="DejaVu Sans", fontsize=10, style=filled, fillcolor="white"];
+    edge  [fontname="DejaVu Sans", fontsize=9, color="#444444"];
+
+    subgraph cluster_ctrl {
+        label="controller  (REST, @RestController)"; style=filled; fillcolor="#eaf2fb"; color="#2b5797";
+        TaskController    [label="{TaskController|GET /api/tasks\lGET /api/tasks/search\lGET /api/tasks/\{id\}\lPOST /api/tasks\lPUT /api/tasks/\{id\}\lDELETE /api/tasks/\{id\}\lGET, POST /api/tasks/\{id\}/comments\l}"];
+        ProjectController [label="{ProjectController|GET /api/projects\lGET /api/projects/\{id\}\lGET /api/projects/\{id\}/tasks\lPOST, PUT, DELETE\l}"];
+        UserController    [label="{UserController|GET /api/users\lGET /api/users/\{id\}\lPOST, PUT, DELETE\l}"];
+        LabelController   [label="{LabelController|GET, POST, PUT, DELETE\l/api/labels\l}"];
+        ReportController  [label="{ReportController|GET /api/reports/projects\lGET /api/reports/users\lGET /api/reports/labels\l}"];
+    }
+
+    subgraph cluster_srv {
+        label="service  (business logic, @Transactional)"; style=filled; fillcolor="#eef7ee"; color="#2e7d32";
+        TaskService    [label="{TaskService|+findAll()\l+findById(id)\l+search(q, status, priority,\l   projectId, assigneeId)\l+create(req)\l+update(id, req)\l+delete(id)\l}"];
+        ProjectService [label="{ProjectService|+findAll()\l+findById(id)\l+create / update / delete\l}"];
+        UserService    [label="{UserService|+findAll()\l+findById(id)\l+create / update / delete\l}"];
+        LabelService   [label="{LabelService|+findAll()\l+create / update / delete\l}"];
+        CommentService [label="{CommentService|+findByTask(taskId)\l+create(taskId, req)\l}"];
+        ReportService  [label="{ReportService|+tasksPerProject()\l+workloadPerUser()\l+tasksPerLabel()\l|JdbcTemplate (SQL JOIN + GROUP BY)\l}"];
+    }
+
+    subgraph cluster_repo {
+        label="repository  (Spring Data JPA)"; style=filled; fillcolor="#fdf5e6"; color="#8a5a00";
+        TaskRepository    [label="{TaskRepository|JpaRepository + JpaSpecificationExecutor\l}"];
+        ProjectRepository [label="{ProjectRepository|JpaRepository\l}"];
+        UserRepository    [label="{UserRepository|JpaRepository\l}"];
+        LabelRepository   [label="{LabelRepository|JpaRepository\l}"];
+        CommentRepository [label="{CommentRepository|findByTaskIdOrderByCreatedAtAsc()\l}"];
+    }
+
+    subgraph cluster_model {
+        label="model  (JPA entities)"; style=filled; fillcolor="#f6eef8"; color="#6a1b9a";
+        User    [label="{User|id : Long\lname : String\lemail : String\l}"];
+        Project [label="{Project|id : Long\lname : String\ldescription : String\l}"];
+        Task    [label="{Task|id : Long\ltitle : String\ldescription : String\lstatus : TaskStatus\lpriority : Priority\ldueDate : LocalDate\lcreatedAt : LocalDateTime\l}"];
+        Label   [label="{Label|id : Long\lname : String\l}"];
+        Comment [label="{Comment|id : Long\ltext : String\lcreatedAt : LocalDateTime\l}"];
+        TaskStatus [label="{«enum»\nTaskStatus|TODO\lIN_PROGRESS\lDONE\l}", fillcolor="#f5f5f5"];
+        Priority   [label="{«enum»\nPriority|LOW\lMEDIUM\lHIGH\l}", fillcolor="#f5f5f5"];
+    }
+
+    GlobalExceptionHandler [label="{GlobalExceptionHandler|404 NotFoundException\l400 validation / bad JSON\l409 constraint violation\l}", fillcolor="#fdecea"];
+
+    TaskController    -> TaskService;
+    TaskController    -> CommentService;
+    ProjectController -> ProjectService;
+    ProjectController -> TaskService;
+    UserController    -> UserService;
+    LabelController   -> LabelService;
+    ReportController  -> ReportService;
+
+    TaskService    -> TaskRepository;
+    TaskService    -> ProjectRepository;
+    TaskService    -> UserRepository;
+    TaskService    -> LabelRepository;
+    ProjectService -> ProjectRepository;
+    ProjectService -> UserRepository;
+    UserService    -> UserRepository;
+    LabelService   -> LabelRepository;
+    CommentService -> CommentRepository;
+    CommentService -> TaskRepository;
+    CommentService -> UserRepository;
+
+    TaskRepository    -> Task    [style=dashed];
+    ProjectRepository -> Project [style=dashed];
+    UserRepository    -> User    [style=dashed];
+    LabelRepository   -> Label   [style=dashed];
+    CommentRepository -> Comment [style=dashed];
+
+    Project -> User    [label="owner\nN : 1", arrowhead=vee];
+    Task    -> Project [label="project\nN : 1", arrowhead=vee];
+    Task    -> User    [label="assignee\nN : 1", arrowhead=vee];
+    Task    -> Label   [label="labels\nN : M", arrowhead=vee];
+    Comment -> Task    [label="task\nN : 1", arrowhead=vee];
+    Comment -> User    [label="author\nN : 1", arrowhead=vee];
+    Task    -> TaskStatus [style=dotted, arrowhead=none];
+    Task    -> Priority   [style=dotted, arrowhead=none];
+}

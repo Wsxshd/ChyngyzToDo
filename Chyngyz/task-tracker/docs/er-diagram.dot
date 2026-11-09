@@ -1,0 +1,68 @@
+digraph ER {
+    graph [rankdir=LR, fontname="DejaVu Sans", pad=0.4, nodesep=0.6, ranksep=1.2, bgcolor="white"];
+    node  [shape=plain, fontname="DejaVu Sans", fontsize=11];
+    edge  [fontname="DejaVu Sans", fontsize=10, color="#444444", arrowhead=none];
+
+    users [label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#2b5797">
+        <TR><TD BGCOLOR="#2b5797" COLSPAN="2"><FONT COLOR="white"><B>users</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">id  BIGSERIAL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">name  VARCHAR(100)  NOT NULL</TD></TR>
+        <TR><TD ALIGN="LEFT">UQ</TD><TD ALIGN="LEFT">email  VARCHAR(150)  NOT NULL</TD></TR>
+      </TABLE>>];
+
+    projects [label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#2b5797">
+        <TR><TD BGCOLOR="#2b5797" COLSPAN="2"><FONT COLOR="white"><B>projects</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">id  BIGSERIAL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">name  VARCHAR(150)  NOT NULL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">description  VARCHAR(1000)</TD></TR>
+        <TR><TD ALIGN="LEFT">FK</TD><TD ALIGN="LEFT">owner_id  → users.id</TD></TR>
+      </TABLE>>];
+
+    tasks [label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#2b5797">
+        <TR><TD BGCOLOR="#2b5797" COLSPAN="2"><FONT COLOR="white"><B>tasks</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">id  BIGSERIAL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">title  VARCHAR(200)  NOT NULL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">description  VARCHAR(2000)</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">status  CHECK (TODO | IN_PROGRESS | DONE)</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">priority  CHECK (LOW | MEDIUM | HIGH)</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">due_date  DATE</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">created_at  TIMESTAMP  NOT NULL</TD></TR>
+        <TR><TD ALIGN="LEFT">FK</TD><TD ALIGN="LEFT">project_id  → projects.id</TD></TR>
+        <TR><TD ALIGN="LEFT">FK</TD><TD ALIGN="LEFT">assignee_id  → users.id  (nullable)</TD></TR>
+      </TABLE>>];
+
+    labels [label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#2b5797">
+        <TR><TD BGCOLOR="#2b5797" COLSPAN="2"><FONT COLOR="white"><B>labels</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">id  BIGSERIAL</TD></TR>
+        <TR><TD ALIGN="LEFT">UQ</TD><TD ALIGN="LEFT">name  VARCHAR(50)  NOT NULL</TD></TR>
+      </TABLE>>];
+
+    task_labels [label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#8a5a00">
+        <TR><TD BGCOLOR="#8a5a00" COLSPAN="2"><FONT COLOR="white"><B>task_labels</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK, FK</B></TD><TD ALIGN="LEFT">task_id  → tasks.id</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK, FK</B></TD><TD ALIGN="LEFT">label_id  → labels.id</TD></TR>
+      </TABLE>>];
+
+    comments [label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#2b5797">
+        <TR><TD BGCOLOR="#2b5797" COLSPAN="2"><FONT COLOR="white"><B>comments</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>PK</B></TD><TD ALIGN="LEFT">id  BIGSERIAL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">text  VARCHAR(1000)  NOT NULL</TD></TR>
+        <TR><TD></TD><TD ALIGN="LEFT">created_at  TIMESTAMP  NOT NULL</TD></TR>
+        <TR><TD ALIGN="LEFT">FK</TD><TD ALIGN="LEFT">task_id  → tasks.id</TD></TR>
+        <TR><TD ALIGN="LEFT">FK</TD><TD ALIGN="LEFT">author_id  → users.id</TD></TR>
+      </TABLE>>];
+
+    users   -> projects    [taillabel="1", headlabel="N", label="owns"];
+    projects -> tasks      [taillabel="1", headlabel="N", label="contains"];
+    users   -> tasks       [taillabel="1", headlabel="N", label="assigned to"];
+    tasks   -> task_labels [taillabel="1", headlabel="N"];
+    labels  -> task_labels [taillabel="1", headlabel="N"];
+    tasks   -> comments    [taillabel="1", headlabel="N", label="has"];
+    users   -> comments    [taillabel="1", headlabel="N", label="writes"];
+}
