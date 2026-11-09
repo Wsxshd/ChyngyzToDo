@@ -2,31 +2,6 @@
 
 Backend на **Java 17 + Spring Boot 3 + PostgreSQL**. REST API для учёта задач по проектам: пользователи, проекты, задачи, метки, комментарии.
 
-## Быстрый запуск (Docker, рекомендуется)
-
-```bash
-docker compose up --build -d
-```
-
-Через ~30–60 секунд откройте в браузере:
-
-- http://localhost:8008/api/tasks/ — список задач (JSON)
-- http://localhost:8008/api/projects
-- http://localhost:8008/api/users
-- http://localhost:8008/api/reports/projects
-
-Остановить: `docker compose down` (данные сохраняются в volume `pgdata`; `docker compose down -v` — удалить и данные).
-
-На сервере то же самое: скопировать папку проекта, выполнить `docker compose up --build -d`. Порт 8008 должен быть открыт.
-
-## Запуск без Docker
-
-1. Установить Java 17+, Maven и PostgreSQL.
-2. Создать БД: `CREATE DATABASE taskdb;`
-3. При необходимости задать переменные окружения `DB_URL`, `DB_USER`, `DB_PASSWORD`
-   (по умолчанию `jdbc:postgresql://localhost:5432/taskdb`, `postgres` / `postgres`).
-4. `mvn spring-boot:run`
-
 Таблицы и стартовые данные создаются автоматически при запуске (`schema.sql`, `data.sql`).
 
 ## Эндпоинты
